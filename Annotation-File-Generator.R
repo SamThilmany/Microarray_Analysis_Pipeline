@@ -1,0 +1,30 @@
+# Create an up-to-date annotation file
+
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("biomaRt")
+
+require(biomaRt)
+
+mart <- useMart('ENSEMBL_MART_ENSEMBL')
+mart <- useDataset('hsapiens_gene_ensembl', mart)
+annotLookup <- getBM(
+  mart = mart,
+  attributes = c(
+    'agilent_sureprint_g3_ge_8x60k_v2',
+    'wikigene_description',
+    'ensembl_gene_id',
+    'entrezgene_id',
+    'gene_biotype',
+    'external_gene_name'
+  )
+)
+
+write.table(
+  annotLookup,
+  paste0('Human_agilent_sureprint_g3_ge_8x60k_v2_', gsub("-", "_", as.character(Sys.Date())), '.tsv'),
+  sep = '\t',
+  row.names = FALSE,
+  quote = FALSE
+)
