@@ -21,9 +21,11 @@ annotLookup <- getBM(
   )
 )
 
+today <- format(Sys.Date(), format="%Y-%m")
+
 write.table(
   annotLookup,
-  paste0('Human_agilent_sureprint_g3_ge_8x60k_v2_', gsub("-", "_", as.character(Sys.Date())), '.tsv'),
+  paste0('Human_agilent_sureprint_g3_ge_8x60k_v2_', gsub("-", "_", as.character(today)), '.tsv'),
   sep = '\t',
   row.names = FALSE,
   quote = FALSE
