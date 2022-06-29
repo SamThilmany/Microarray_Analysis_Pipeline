@@ -11,16 +11,25 @@ editor_options:
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
+
+
 ```{r general-config}
 # #####################
 # General configuration
 # #####################
 
 baseDir <- getwd()
+print(baseDir)
 targetsFile <- 'targets.tsv'
 
-options(scipen = 99)
+options(scipen = 99) # prevent scientific notation
+
+library(BiocManager)
 require(limma)
+require(statmod)
+
+require(stringr)
+
 library(kableExtra)
 ```
 
@@ -48,18 +57,26 @@ if (!file.exists(annotationFile)) {
 # ################
 
 # Targets
-targetinfo <- readTargets(targetsFile, sep = '\t')
+targetinfo <- readTargets(targetsFile, row.names = 'Name')
 
-# SureScan Data
-# converts the data to an EListRaw object
+# Converts the raw data to an EListRaw object
+wtAgilent.GFilter <- function(qta) { qta[,"gIsPosAndSignif"] }
 project <- read.maimages(
   targetinfo,
   source = 'agilent.median',
   green.only = TRUE,
-  other.columns = 'gIsWellAboveBG'
+  path = "data",
+  other.columns = 'gIsWellAboveBG',
+  wt.fun = wtAgilent.GFilter
 )
-colnames(project) <- gsub('raw\\/', '', colnames(project))
+
+colnames(project) <- row.names(targetinfo)
+
+# Add the spot type
+spotTypes <- readSpotTypes(file = 'SpotTypes.tsv')
+project$genes$Status <- controlStatus(spotTypes, project)
 ```
+
 
 
 ```{r qc-plots-raw-data}
@@ -135,9 +152,9 @@ project.bgcorrect.norm <- normalizeBetweenArrays(project.bgcorrect, method = 'qu
 # and those that fail
 # ##########################
 
-Control <- project.bgcorrect.norm$genes$ControlType == 1L
+Control <- project.bgcorrect.norm$genes$ControlType != 0
 NoSymbol <- is.na(project.bgcorrect.norm$genes$external_gene_name)
-IsExpr <- rowSums(project.bgcorrect.norm$other$gIsWellAboveBG > 0) >= 4
+IsExpr <- rowSums(project.bgcorrect.norm$other$gIsWellAboveBG > 0) >= 3
 
 project.bgcorrect.norm.filt <- project.bgcorrect.norm[!Control & !NoSymbol & IsExpr, ]
 dim(project.bgcorrect.norm)
