@@ -1,5 +1,8 @@
+# ####################################
 # Create an up-to-date annotation file
+# ####################################
 
+# Install required packages
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
@@ -7,6 +10,7 @@ BiocManager::install("biomaRt")
 
 require(biomaRt)
 
+# Get annotation table
 mart <- useMart('ENSEMBL_MART_ENSEMBL')
 mart <- useDataset('hsapiens_gene_ensembl', mart)
 annotLookup <- getBM(
@@ -21,6 +25,7 @@ annotLookup <- getBM(
   )
 )
 
+# Export annotation table as tsv file
 today <- format(Sys.Date(), format="%Y-%m")
 
 write.table(
