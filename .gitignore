@@ -44,3 +44,7 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# Files created by the script
+graphics/*
+annotation-files/*
